@@ -186,7 +186,10 @@ begin
         end if;
         
         
-    end process register_proc;
+        end process register_proc;
+
+end thunderbird_fsm_arch;
+
     
     
     
