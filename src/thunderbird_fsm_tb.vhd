@@ -48,37 +48,93 @@
 --|
 --+----------------------------------------------------------------------------
 library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.numeric_std.all;
-  
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 entity thunderbird_fsm_tb is
 end thunderbird_fsm_tb;
 
-architecture test_bench of thunderbird_fsm_tb is 
-	
-	component thunderbird_fsm is 
---	  port(
-		
---	  );
-	end component thunderbird_fsm;
+architecture test_bench of thunderbird_fsm_tb is
 
-	-- test I/O signals
-	
-	-- constants
-	
-	
+    -- Component declaration
+    component thunderbird_fsm is
+        port (
+            i_clk       : in  std_logic;
+            i_reset     : in  std_logic;
+            i_left      : in  std_logic;
+            i_right     : in  std_logic;
+            o_lights_L  : out std_logic_vector(2 downto 0);
+            o_lights_R  : out std_logic_vector(2 downto 0)
+        );
+    end component;
+
+    -- Signals to connect to the FSM
+    signal tb_clk      : std_logic := '0';
+    signal tb_reset    : std_logic := '0';
+    signal tb_left     : std_logic := '0';
+    signal tb_right    : std_logic := '0';
+    signal tb_lights_L : std_logic_vector(2 downto 0);
+    signal tb_lights_R : std_logic_vector(2 downto 0);
+
+    -- Clock period
+    constant CLK_PERIOD : time := 10 ns;
+
 begin
-	-- PORT MAPS ----------------------------------------
-	
-	-----------------------------------------------------
-	
-	-- PROCESSES ----------------------------------------	
-    -- Clock process ------------------------------------
-    
-	-----------------------------------------------------
-	
-	-- Test Plan Process --------------------------------
-	
-	-----------------------------------------------------	
-	
+
+    -- Connect the FSM to test signals
+    uut: thunderbird_fsm
+        port map (
+            i_clk       => tb_clk,
+            i_reset     => tb_reset,
+            i_left      => tb_left,
+            i_right     => tb_right,
+            o_lights_L  => tb_lights_L,
+            o_lights_R  => tb_lights_R
+        );
+
+    -- Clock generation
+    clk_process : process
+    begin
+        while true loop
+            tb_clk <= '0';
+            wait for CLK_PERIOD / 2;
+            tb_clk <= '1';
+            wait for CLK_PERIOD / 2;
+        end loop;
+    end process;
+
+    -- Main test process
+    stim_proc : process
+    begin
+        -- Reset the FSM
+        tb_reset <= '1';
+        wait for 20 ns;
+        tb_reset <= '0';
+        wait for 20 ns;
+
+        -- Test Left turn signal
+        tb_left <= '1';
+        tb_right <= '0';
+        wait for 300 ns;
+        tb_left <= '0';
+        wait for 100 ns;
+
+        -- Test Right turn signal
+        tb_left <= '0';
+        tb_right <= '1';
+        wait for 300 ns;
+        tb_right <= '0';
+        wait for 100 ns;
+
+        -- Test Hazard lights
+        tb_left <= '1';
+        tb_right <= '1';
+        wait for 300 ns;
+        tb_left <= '0';
+        tb_right <= '0';
+
+        -- Stop simulation
+        wait;
+    end process;
+
 end test_bench;
